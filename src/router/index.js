@@ -1,30 +1,65 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import HomeView from "../views/HomeView.vue";
-
+import Login from "@/views/Login"
+import Home from "@/views/Home"
+import OverView from "@/components/analysis/OverView"
+import DashBoard from "@/components/analysis/DashBoard"
+import User from "@/components/system/User"
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    redirect:"/login",
+    component: Login,
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    path: "/login",
+    component: Login,
   },
+  {
+    path: "/home",
+    component:Home,
+    children:[
+      {
+        path:"/main/analysis/overview",
+        component:OverView,
+      },
+      {
+        path:"/main/analysis/dashboard",
+        component:DashBoard
+      },
+      {
+        path:"/main/system/user",
+        component:User
+      }
+    ]
+  }
 ];
 
 const router = new VueRouter({
   mode: "history",
-  base: process.env.BASE_URL,
+  // base: process.env.BASE_URL,
   routes,
 });
+// 导航守卫
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  if (to.path == '/login'){
+    if(!token) next()
+    else {
+      next({path:'/home'})
+    }
+  }
+  else {
+    if(token){
+      next()
+    }else{
+      next({path:'/login'})
+    }
+  }
+})
+
+
 
 export default router;
